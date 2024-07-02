@@ -3,6 +3,7 @@ using Cs2Cheats;
 using Swed64;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Vortice.Direct3D11;
 
 Console.WriteLine("Programmed by Kürşat Sinan");
 

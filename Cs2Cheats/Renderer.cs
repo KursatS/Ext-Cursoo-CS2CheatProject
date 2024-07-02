@@ -2,11 +2,15 @@
 using ImGuiNET;
 using System.Collections.Concurrent;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace Cs2Cheats
 {
     public class Renderer : Overlay
     {
+        [DllImport("user32.dll")]
+        static extern short GetAsyncKeyState(int vkey);
+
         public Vector2 screenSize = new Vector2(1920, 1080);
 
         private ConcurrentQueue<Entity> entities = new ConcurrentQueue<Entity>();
@@ -15,7 +19,8 @@ namespace Cs2Cheats
 
         ImDrawListPtr drawList;
 
-        private bool enableESP = true;
+        public bool showMenu = true;
+        public bool enableESP = true;
         public bool enableFlashBlock = true;
         public bool enableAimbot = true;
         public bool enableBHOP = true;
@@ -30,13 +35,16 @@ namespace Cs2Cheats
             ImGui.Checkbox("Enable ESP", ref enableESP);
             ImGui.Checkbox("Enable Trigger", ref enableTrigger);
             ImGui.Checkbox("Enable Aimbot", ref enableAimbot);
+            ImGui.SameLine();
+            ImGui.Checkbox("Enable Aim on Team", ref aimOnTeam);
             ImGui.Checkbox("Enable Flash Block", ref enableFlashBlock);
             ImGui.Checkbox("Enable BHOP", ref enableBHOP);
 
-            if (ImGui.CollapsingHeader("Team color"))
-                ImGui.ColorPicker4("##teamcolor", ref teamColor);
             if (ImGui.CollapsingHeader("Enemy color"))
                 ImGui.ColorPicker4("##enemycolor", ref enemyColor);
+
+            if (ImGui.CollapsingHeader("Team color"))
+                ImGui.ColorPicker4("##teamcolor", ref teamColor);
 
             DrawOverlay(screenSize);
             drawList = ImGui.GetWindowDrawList();
@@ -117,5 +125,6 @@ namespace Cs2Cheats
                 | ImGuiWindowFlags.NoScrollbar
                 | ImGuiWindowFlags.NoScrollWithMouse);
         }
+
     }
 }
