@@ -19,8 +19,9 @@ Console.WriteLine($"Screen Size: {screenSize.X}x{screenSize.Y}");
 Entity localPlayer = new Entity();
 List<Entity> entities = new List<Entity>();
 
-const int HOTKEY = 0x10;
+const int AIMBOT_HOTKEY = 0x10; // SHIFT
 const int SPACE_BAR = 0x20;
+const int TRIGGER_HOTKEY = 0x05; // MOUSE 4 OR MOUSE 5
 const uint STANDING = 65665;
 const uint CROUCHING = 65667;
 const uint PLUS_JUMP = 65537;
@@ -39,6 +40,15 @@ while (true)
     localPlayer.origin = swed.ReadVec(localPlayer.pawnAdress, Offsets.m_vOldOrigin);
     localPlayer.view = swed.ReadVec(localPlayer.pawnAdress, Offsets.m_vecViewOffset);
     uint fFlag = swed.ReadUInt(localPlayerPawn, 0x3CC);
+    int entIndex = swed.ReadInt(localPlayerPawn, Offsets.m_iIDEntIndex);
+
+    if(entIndex != -1 && (GetAsyncKeyState(TRIGGER_HOTKEY)) < 0 && renderer.enableTrigger)
+    {
+        swed.WriteInt(client,Offsets.dwForceAttack, 65537);
+        Thread.Sleep(10);
+        swed.WriteInt(client,Offsets.dwForceAttack, 256);
+        Thread.Sleep(2);
+    }
 
     if (renderer.enableBHOP && GetAsyncKeyState(SPACE_BAR) < 0)
     {
@@ -121,7 +131,7 @@ while (true)
 
     entities = entities.OrderBy(o => o.distance).ToList();
 
-    if (renderer.enableAimbot && entities.Count > 0 && GetAsyncKeyState(HOTKEY) < 0)
+    if (renderer.enableAimbot && entities.Count > 0 && GetAsyncKeyState(AIMBOT_HOTKEY) < 0)
     {
         Vector3 playerView = Vector3.Add(localPlayer.origin, localPlayer.view);
         Vector3 entityView = Vector3.Add(entities[0].origin, entities[0].view);

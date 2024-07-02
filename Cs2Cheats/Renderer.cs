@@ -19,6 +19,7 @@ namespace Cs2Cheats
         public bool enableFlashBlock = true;
         public bool enableAimbot = true;
         public bool enableBHOP = true;
+        public bool enableTrigger = true;
         public bool aimOnTeam = false;
         private Vector4 enemyColor = new Vector4(1, 0, 0, 1); //RED
         private Vector4 teamColor = new Vector4(0, 1, 0, 1); //GREEN
@@ -27,6 +28,7 @@ namespace Cs2Cheats
         {
             ImGui.Begin("by Cursoo^^");
             ImGui.Checkbox("Enable ESP", ref enableESP);
+            ImGui.Checkbox("Enable Trigger", ref enableTrigger);
             ImGui.Checkbox("Enable Aimbot", ref enableAimbot);
             ImGui.Checkbox("Enable Flash Block", ref enableFlashBlock);
             ImGui.Checkbox("Enable BHOP", ref enableBHOP);
@@ -46,6 +48,7 @@ namespace Cs2Cheats
                     //ImGui.Text($"Entity Screen Position: {entity.pos2D.X}, {entity.pos2D.Y}"); // For seeing all entities position at the top left on screen
                     if (EntityOnScreen(entity))
                     {
+                        DrawHealthBar(entity);
                         DrawBox(entity);
                         DrawLine(entity);
                     }
@@ -59,6 +62,22 @@ namespace Cs2Cheats
                 return true;
             }
             return false;
+        }
+
+        private void DrawHealthBar(Entity entity)
+        {
+            float entityHeight = entity.pos2D.Y - entity.viewPos2D.Y;
+            float boxLeft = entity.viewPos2D.X - entityHeight / 3;
+            float boxRight = entity.pos2D.X + entityHeight / 3;
+            float barWidth = 0.05f;
+            float barHeight = entityHeight * (entity.health / 100f);
+            float barPixelWidth = barWidth * (boxRight - boxLeft);
+
+            Vector2 barTop = new Vector2(boxLeft - barPixelWidth, entity.pos2D.Y - barHeight);
+            Vector2 barBottom = new Vector2(boxLeft, entity.pos2D.Y);
+            Vector4 barColor = new Vector4(0, 1, 0, 1);
+
+            drawList.AddRectFilled(barTop, barBottom, ImGui.ColorConvertFloat4ToU32(barColor));
         }
         private void DrawBox(Entity entity)
         {

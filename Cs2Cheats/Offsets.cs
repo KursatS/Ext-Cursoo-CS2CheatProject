@@ -7,6 +7,7 @@
         public static int dwEntityList = 0x19BDE58;
         public static int dwViewMatrix = 0x1A1FDB0;
         public static int dwViewAngles = 0x1A2D328;
+        public static int dwForceAttack = 0x181C160;
 
         //Client.dll
         public static int m_flFlashBangTime = 0x1348;
@@ -18,6 +19,7 @@
         public static int m_vecViewOffset = 0xC50;
         public static int m_iHealth = 0x324;
         public static int m_pGameSceneNode = 0x308;
+        public static int m_iIDEntIndex = 0x13A8;
 
     }
 }
