@@ -12,9 +12,11 @@ namespace Cs2Cheats
         public IntPtr controllerAdress { get; set; }
         public Vector3 origin { get; set; }
         public Vector3 view { get; set; }
+        public Vector3 head { get; set; }
         public int health { get; set; }
         public int team { get; set; }
         public uint lifeState { get; set; }
         public float distance { get; set; }
+
     }
 }

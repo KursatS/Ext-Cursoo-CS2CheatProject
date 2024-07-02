@@ -17,6 +17,7 @@
         public static int m_modelState = 0x170;
         public static int m_vecViewOffset = 0xC50;
         public static int m_iHealth = 0x324;
+        public static int m_pGameSceneNode = 0x308;
 
     }
 }

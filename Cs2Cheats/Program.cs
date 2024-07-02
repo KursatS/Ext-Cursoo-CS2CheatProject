@@ -86,6 +86,10 @@ while (true)
         uint lifeState = swed.ReadUInt(currentPawn, Offsets.m_lifeState);
         if (lifeState != 256) continue;
 
+        IntPtr sceneNode = swed.ReadPointer(currentPawn, Offsets.m_pGameSceneNode);
+
+        IntPtr boneMatrix = swed.ReadPointer(sceneNode, Offsets.m_modelState + 0x80);
+
         int health = swed.ReadInt(currentPawn, Offsets.m_iHealth);
         int team = swed.ReadInt(currentPawn, Offsets.m_iTeamNum);
         if (team == localPlayer.team && !renderer.aimOnTeam)
@@ -108,6 +112,7 @@ while (true)
         entity.distance = Vector3.Distance(entity.origin, localPlayer.origin);
         entity.pos2D = Calculate.WorldtoScreen(viewMatrix, entity.pos, screenSize);
         entity.viewPos2D = Calculate.WorldtoScreen(viewMatrix, Vector3.Add(entity.pos, entity.viewOffset), screenSize);
+        entity.head = swed.ReadVec(boneMatrix, 6 * 32);
 
         entities.Add(entity);
     }
@@ -120,7 +125,7 @@ while (true)
     {
         Vector3 playerView = Vector3.Add(localPlayer.origin, localPlayer.view);
         Vector3 entityView = Vector3.Add(entities[0].origin, entities[0].view);
-        Vector2 newAngles = Calculate.CalculateAngles(playerView, entityView);
+        Vector2 newAngles = Calculate.CalculateAngles(playerView, entities[0].head);
         Vector3 newAnglesVec3 = new Vector3(newAngles.Y, newAngles.X, 0.0f);
 
         swed.WriteVec(client, Offsets.dwViewAngles, newAnglesVec3);
