@@ -1,5 +1,4 @@
 # Cs2 External Cheat
 
-<img src="https://i.hizliresim.com/tfll223.png" alt="alt text" width="800" height="600"> <br><br>
-<img src="https://i.hizliresim.com/sw0kdhk.png" alt="alt text" width="800" height="600"> 
-
+<img src="https://i.hizliresim.com/sw0kdhk.png" alt="alt text" width="960" height="900"> <br><br>
+<img src="https://i.hizliresim.com/qwrxsgz.png" alt="alt text" width="960" height="900"> 
