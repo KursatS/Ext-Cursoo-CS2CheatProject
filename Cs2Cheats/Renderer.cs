@@ -3,6 +3,8 @@ using ImGuiNET;
 using System.Collections.Concurrent;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
+
 
 namespace Cs2Cheats
 {
@@ -11,7 +13,10 @@ namespace Cs2Cheats
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(int vkey);
 
-        public Vector2 screenSize = new Vector2(1920, 1080);
+        static int screenW = Screen.PrimaryScreen.Bounds.Width;
+        static int screenH = Screen.PrimaryScreen.Bounds.Height;
+
+        public Vector2 screenSize = new Vector2(screenW, screenH);
 
         private ConcurrentQueue<Entity> entities = new ConcurrentQueue<Entity>();
         private Entity localPlayer = new Entity();
@@ -19,7 +24,6 @@ namespace Cs2Cheats
 
         ImDrawListPtr drawList;
 
-        public bool showMenu = true;
         public bool enableESP = true;
         public bool enableFlashBlock = true;
         public bool enableAimbot = true;
@@ -32,27 +36,46 @@ namespace Cs2Cheats
         private Vector4 enemyColor = new Vector4(1, 0, 0, 1); // RED
         private Vector4 teamColor = new Vector4(0, 1, 0, 1);  // GREEN
 
+        static void HelpMarker(string text)
+        {
+            ImGui.TextDisabled("?");
+            if (ImGui.BeginItemTooltip())
+            {
+                ImGui.PushTextWrapPos(ImGui.GetFontSize() * 35f);
+                ImGui.TextUnformatted(text);
+                ImGui.PopTextWrapPos();
+                ImGui.EndTooltip();
+            }
+        }
+
         protected override void Render()
         {
             ImGui.Begin("by Cursoo^^");
+            ImGui.Text("INSERT for exit");
             ImGui.Checkbox("Enable ESP", ref enableESP);
             ImGui.Checkbox("Enable Trigger", ref enableTrigger);
+            ImGui.SameLine(); HelpMarker("HOLD to CAPS LOCK");
             ImGui.Checkbox("Enable Aimbot", ref enableAimbot);
-            ImGui.SameLine();
+            ImGui.SameLine(); HelpMarker("HOLD to SHIFT");
             ImGui.Checkbox("Enable Aim on Team", ref aimOnTeam);
             ImGui.SliderFloat("Aimbot FOV", ref circleFov, 10, 300);
             ImGui.SliderInt("Player FOV", ref playerFov, 85, 160);
             ImGui.Checkbox("Enable Flash Block", ref enableFlashBlock);
             ImGui.Checkbox("Enable BHOP", ref enableBHOP);
 
-            if (ImGui.CollapsingHeader("FOV Circle Color"))
-                ImGui.ColorPicker4("##circlecolor",ref circleColor);
+            if (ImGui.BeginMenu("Color Settings"))
+            {
+                if (ImGui.CollapsingHeader("FOV Circle Color"))
+                    ImGui.ColorPicker4("##circlecolor", ref circleColor);
 
-            if (ImGui.CollapsingHeader("Enemy color"))
-                ImGui.ColorPicker4("##enemycolor", ref enemyColor);
+                if (ImGui.CollapsingHeader("Enemy color"))
+                    ImGui.ColorPicker4("##enemycolor", ref enemyColor);
 
-            if (ImGui.CollapsingHeader("Team color"))
-                ImGui.ColorPicker4("##teamcolor", ref teamColor);
+                if (ImGui.CollapsingHeader("Team color"))
+                    ImGui.ColorPicker4("##teamcolor", ref teamColor);
+            }
+
+
 
             DrawOverlay(screenSize);
             drawList = ImGui.GetWindowDrawList();

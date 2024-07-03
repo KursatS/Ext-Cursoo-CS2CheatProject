@@ -20,9 +20,10 @@ Console.WriteLine($"Screen Size: {screenSize.X}x{screenSize.Y}");
 Entity localPlayer = new Entity();
 List<Entity> entities = new List<Entity>();
 
-const int AIMBOT_HOTKEY = 0x10; // SHIFT
-const int SPACE_BAR = 0x20;
-const int TRIGGER_HOTKEY = 0x05; // MOUSE 4 OR MOUSE 5
+const int AIMBOT_HOTKEY = 0x10;  // SHIFT
+const int SPACE_BAR = 0x20;      // BHOP
+const int INSERT = 0x2D;         // CLOSE CHEAT
+const int TRIGGER_HOTKEY = 0x14; // MOUSE 4 OR MOUSE 5
 const uint STANDING = 65665;
 const uint CROUCHING = 65667;
 const uint PLUS_JUMP = 65537;
@@ -48,15 +49,21 @@ while (true)
     uint currentFov = swed.ReadUInt(cameraServices + Offsets.m_iFOV);
     bool isScoped = swed.ReadBool(localPlayerPawn, Offsets.m_bIsScoped);
 
+    if(GetAsyncKeyState(INSERT) < 0)
+    {
+        swed.WriteUInt(cameraServices + Offsets.m_iFOV, 90);
+        Thread.Sleep(500);
+        Environment.Exit(0);
+    }
+
     if(!isScoped && currentFov != playerFov)
     {
         swed.WriteUInt(cameraServices + Offsets.m_iFOV, playerFov);
     }
 
-    
-
     if(entIndex != -1 && (GetAsyncKeyState(TRIGGER_HOTKEY)) < 0 && renderer.enableTrigger)
     {
+        Thread.Sleep(35);
         swed.WriteInt(client,Offsets.dwForceAttack, 65537);
         Thread.Sleep(10);
         swed.WriteInt(client,Offsets.dwForceAttack, 256);
