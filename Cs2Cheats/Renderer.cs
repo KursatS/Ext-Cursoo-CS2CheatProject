@@ -26,8 +26,11 @@ namespace Cs2Cheats
         public bool enableBHOP = true;
         public bool enableTrigger = true;
         public bool aimOnTeam = false;
-        private Vector4 enemyColor = new Vector4(1, 0, 0, 1); //RED
-        private Vector4 teamColor = new Vector4(0, 1, 0, 1); //GREEN
+        public float circleFov = 50;
+        public int playerFov = 90;
+        public Vector4 circleColor = new Vector4(1,1,1,1);    // WHITE
+        private Vector4 enemyColor = new Vector4(1, 0, 0, 1); // RED
+        private Vector4 teamColor = new Vector4(0, 1, 0, 1);  // GREEN
 
         protected override void Render()
         {
@@ -37,8 +40,13 @@ namespace Cs2Cheats
             ImGui.Checkbox("Enable Aimbot", ref enableAimbot);
             ImGui.SameLine();
             ImGui.Checkbox("Enable Aim on Team", ref aimOnTeam);
+            ImGui.SliderFloat("Aimbot FOV", ref circleFov, 10, 300);
+            ImGui.SliderInt("Player FOV", ref playerFov, 85, 160);
             ImGui.Checkbox("Enable Flash Block", ref enableFlashBlock);
             ImGui.Checkbox("Enable BHOP", ref enableBHOP);
+
+            if (ImGui.CollapsingHeader("FOV Circle Color"))
+                ImGui.ColorPicker4("##circlecolor",ref circleColor);
 
             if (ImGui.CollapsingHeader("Enemy color"))
                 ImGui.ColorPicker4("##enemycolor", ref enemyColor);
@@ -48,6 +56,7 @@ namespace Cs2Cheats
 
             DrawOverlay(screenSize);
             drawList = ImGui.GetWindowDrawList();
+            drawList.AddCircle(new Vector2(screenSize.X / 2, screenSize.Y / 2), circleFov, ImGui.ColorConvertFloat4ToU32(circleColor));
 
             if (enableESP)
             {

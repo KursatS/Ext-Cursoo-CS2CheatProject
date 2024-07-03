@@ -4,9 +4,9 @@
     {
         //Offsets.cs
         public static int dwLocalPlayerPawn = 0x1823A08;
-        public static int dwEntityList = 0x19BDE58;
-        public static int dwViewMatrix = 0x1A1FDB0;
-        public static int dwViewAngles = 0x1A2D328;
+        public static int dwEntityList = 0x19BDD78;
+        public static int dwViewMatrix = 0x1A1FCD0;
+        public static int dwViewAngles = 0x1A2D248;
         public static int dwForceAttack = 0x181C160;
 
         //Client.dll
@@ -20,6 +20,9 @@
         public static int m_iHealth = 0x324;
         public static int m_pGameSceneNode = 0x308;
         public static int m_iIDEntIndex = 0x13A8;
+        public static int m_pCameraServices = 0x1130;
+        public static int m_iFOV = 0x210;
+        public static int m_bIsScoped = 0x22A0;
 
     }
 }

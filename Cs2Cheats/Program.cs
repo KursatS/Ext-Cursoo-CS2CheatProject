@@ -43,6 +43,18 @@ while (true)
     uint fFlag = swed.ReadUInt(localPlayerPawn, 0x3CC);
     int entIndex = swed.ReadInt(localPlayerPawn, Offsets.m_iIDEntIndex);
 
+    IntPtr cameraServices = swed.ReadPointer(localPlayerPawn, Offsets.m_pCameraServices);
+    uint playerFov = (uint)renderer.playerFov;
+    uint currentFov = swed.ReadUInt(cameraServices + Offsets.m_iFOV);
+    bool isScoped = swed.ReadBool(localPlayerPawn, Offsets.m_bIsScoped);
+
+    if(!isScoped && currentFov != playerFov)
+    {
+        swed.WriteUInt(cameraServices + Offsets.m_iFOV, playerFov);
+    }
+
+    
+
     if(entIndex != -1 && (GetAsyncKeyState(TRIGGER_HOTKEY)) < 0 && renderer.enableTrigger)
     {
         swed.WriteInt(client,Offsets.dwForceAttack, 65537);
@@ -124,24 +136,29 @@ while (true)
         entity.pos2D = Calculate.WorldtoScreen(viewMatrix, entity.pos, screenSize);
         entity.viewPos2D = Calculate.WorldtoScreen(viewMatrix, Vector3.Add(entity.pos, entity.viewOffset), screenSize);
         entity.head = swed.ReadVec(boneMatrix, 6 * 32);
+        entity.head2d = Calculate.WorldtoScreen(viewMatrix, entity.head, screenSize);
+        entity.pixelDistance = Vector2.Distance(entity.head2d, new Vector2(screenSize.X / 2, screenSize.Y / 2));
 
         entities.Add(entity);
     }
     renderer.UpdateLocalPlayer(localPlayer);
     renderer.UpdateEntities(entities);
 
-    entities = entities.OrderBy(o => o.distance).ToList();
+    entities = entities.OrderBy(o => o.pixelDistance).ToList();
 
     if (renderer.enableAimbot && entities.Count > 0 && GetAsyncKeyState(AIMBOT_HOTKEY) < 0)
     {
         Vector3 playerView = Vector3.Add(localPlayer.origin, localPlayer.view);
         Vector3 entityView = Vector3.Add(entities[0].origin, entities[0].view);
-        Vector2 newAngles = Calculate.CalculateAngles(playerView, entities[0].head);
-        Vector3 newAnglesVec3 = new Vector3(newAngles.Y, newAngles.X, 0.0f);
 
-        swed.WriteVec(client, Offsets.dwViewAngles, newAnglesVec3);
+        if (entities[0].pixelDistance < renderer.circleFov)
+        {
+            Vector2 newAngles = Calculate.CalculateAngles(playerView, entities[0].head);
+            Vector3 newAnglesVec3 = new Vector3(newAngles.Y, newAngles.X, 0.0f);
+
+            swed.WriteVec(client, Offsets.dwViewAngles, newAnglesVec3);
+        }
     }
-
 }
 
 [DllImport("user32.dll")]
