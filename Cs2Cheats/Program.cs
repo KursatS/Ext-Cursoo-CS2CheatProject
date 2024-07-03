@@ -1,5 +1,5 @@
 ﻿
-using Cs2Cheats;
+using cursooV1;
 using Swed64;
 using System.Numerics;
 using System.Runtime.InteropServices;

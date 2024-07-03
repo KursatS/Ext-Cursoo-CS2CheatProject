@@ -1,4 +1,4 @@
-﻿namespace Cs2Cheats
+﻿namespace cursooV1
 {
     public static class Offsets
     {

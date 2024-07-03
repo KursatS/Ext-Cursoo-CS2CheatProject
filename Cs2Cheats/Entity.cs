@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Cs2Cheats
+namespace cursooV1
 {
     public class Entity
     {

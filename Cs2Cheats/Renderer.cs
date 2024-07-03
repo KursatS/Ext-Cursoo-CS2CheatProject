@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 
-namespace Cs2Cheats
+namespace cursooV1
 {
     public class Renderer : Overlay
     {
