@@ -1,6 +1,7 @@
 ﻿using ClickableTransparentOverlay;
 using ImGuiNET;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -30,6 +31,8 @@ namespace cursooV1
         public bool enableBHOP = true;
         public bool enableTrigger = true;
         public bool aimOnTeam = false;
+        public bool aimOnlySpotted = true;
+        public bool enableESPLines = true;
         public float circleFov = 50;
         public int playerFov = 90;
         public Vector4 circleColor = new Vector4(1,1,1,1);    // WHITE
@@ -53,17 +56,20 @@ namespace cursooV1
             ImGui.Begin("by Cursoo^^");
             ImGui.Text("INSERT for exit");
             ImGui.Checkbox("Enable ESP", ref enableESP);
+            ImGui.SameLine();
+            ImGui.Checkbox("Enable ESP Lines", ref enableESPLines);
             ImGui.Checkbox("Enable Trigger", ref enableTrigger);
             ImGui.SameLine(); HelpMarker("HOLD to CAPS LOCK");
             ImGui.Checkbox("Enable Aimbot", ref enableAimbot);
             ImGui.SameLine(); HelpMarker("HOLD to SHIFT");
+            //ImGui.Checkbox("Enable Aim Only Spotted", ref aimOnlySpotted); Working on it.
             ImGui.Checkbox("Enable Aim on Team", ref aimOnTeam);
             ImGui.SliderFloat("Aimbot FOV", ref circleFov, 10, 300);
             ImGui.SliderInt("Player FOV", ref playerFov, 85, 160);
             ImGui.Checkbox("Enable Flash Block", ref enableFlashBlock);
             ImGui.Checkbox("Enable BHOP", ref enableBHOP);
 
-            if (ImGui.BeginMenu("Color Settings"))
+            if (ImGui.TreeNode("Color Settings"))
             {
                 if (ImGui.CollapsingHeader("FOV Circle Color"))
                     ImGui.ColorPicker4("##circlecolor", ref circleColor);
@@ -73,9 +79,17 @@ namespace cursooV1
 
                 if (ImGui.CollapsingHeader("Team color"))
                     ImGui.ColorPicker4("##teamcolor", ref teamColor);
+                ImGui.TreePop();
             }
-
-
+            ImGui.Separator();
+            if (ImGui.Button("GITHUB"))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://github.com/KursatS/Cs2-External-Cheat-Project",
+                    UseShellExecute = true
+                });
+            }
 
             DrawOverlay(screenSize);
             drawList = ImGui.GetWindowDrawList();
@@ -85,16 +99,31 @@ namespace cursooV1
             {
                 foreach (var entity in entities)
                 {
-                    //ImGui.Text($"Entity Screen Position: {entity.pos2D.X}, {entity.pos2D.Y}"); // For seeing all entities position at the top left on screen
                     if (EntityOnScreen(entity))
                     {
                         DrawHealthBar(entity);
                         DrawBox(entity);
+                        DrawHealthBar(entity);
+                    }
+                }
+            }
+            if (enableESPLines)
+            {
+                foreach (var entity in entities)
+                {
+                    if (EntityOnScreen(entity))
+                    {
                         DrawLine(entity);
                     }
                 }
             }
         }
+
+        static void naber()
+        {
+            System.Diagnostics.Process.Start("http://www.webpage.com");
+        }
+
         bool EntityOnScreen(Entity entity)
         {
             if (entity.pos2D.X > 0 && entity.pos2D.X < screenSize.X && entity.pos2D.Y > 0 && entity.pos2D.Y < screenSize.Y)

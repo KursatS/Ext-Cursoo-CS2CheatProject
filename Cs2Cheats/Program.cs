@@ -2,7 +2,9 @@
 using cursooV1;
 using Swed64;
 using System.Numerics;
+using System.Resources;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using Vortice.Direct3D11;
 
 Console.WriteLine("Programmed by Kürşat Sinan");
@@ -15,7 +17,6 @@ Thread renderThread = new Thread(new ThreadStart(renderer.Start().Wait));
 renderThread.Start();
 
 Vector2 screenSize = renderer.screenSize;
-Console.WriteLine($"Screen Size: {screenSize.X}x{screenSize.Y}");
 
 Entity localPlayer = new Entity();
 List<Entity> entities = new List<Entity>();
@@ -23,7 +24,7 @@ List<Entity> entities = new List<Entity>();
 const int AIMBOT_HOTKEY = 0x10;  // SHIFT
 const int SPACE_BAR = 0x20;      // BHOP
 const int INSERT = 0x2D;         // CLOSE CHEAT
-const int TRIGGER_HOTKEY = 0x14; // MOUSE 4 OR MOUSE 5
+const int TRIGGER_HOTKEY = 0x14; // CAPS LOCK
 const uint STANDING = 65665;
 const uint CROUCHING = 65667;
 const uint PLUS_JUMP = 65537;
@@ -49,42 +50,42 @@ while (true)
     uint currentFov = swed.ReadUInt(cameraServices + Offsets.m_iFOV);
     bool isScoped = swed.ReadBool(localPlayerPawn, Offsets.m_bIsScoped);
 
-    if(GetAsyncKeyState(INSERT) < 0)
+    if (GetAsyncKeyState(INSERT) < 0) //Close App
     {
         swed.WriteUInt(cameraServices + Offsets.m_iFOV, 90);
-        Thread.Sleep(500);
+        Thread.Sleep(250);
         Environment.Exit(0);
     }
 
-    if(!isScoped && currentFov != playerFov)
+    if(!isScoped && currentFov != playerFov) // FOV CHANGE METHOD
     {
         swed.WriteUInt(cameraServices + Offsets.m_iFOV, playerFov);
     }
 
-    if(entIndex != -1 && (GetAsyncKeyState(TRIGGER_HOTKEY)) < 0 && renderer.enableTrigger)
+    if(entIndex != -1 && (GetAsyncKeyState(TRIGGER_HOTKEY)) < 0 && renderer.enableTrigger) //TRIGGER METHOD
     {
-        Thread.Sleep(35);
+        Thread.Sleep(5);
         swed.WriteInt(client,Offsets.dwForceAttack, 65537);
-        Thread.Sleep(10);
+        Thread.Sleep(5);
         swed.WriteInt(client,Offsets.dwForceAttack, 256);
-        Thread.Sleep(2);
+        Thread.Sleep(270); // FOR SLOW ATTACK
     }
 
-    if (renderer.enableBHOP && GetAsyncKeyState(SPACE_BAR) < 0)
+    if (renderer.enableBHOP && GetAsyncKeyState(SPACE_BAR) < 0)// BHOP METHOD
     {
         if (fFlag == STANDING || fFlag == CROUCHING)
         {
-            Thread.Sleep(1);
+            Thread.Sleep(5);
             swed.WriteUInt(forceJumpAdress, PLUS_JUMP);
         }
         else
         {
+            Thread.Sleep(1);
             swed.WriteUInt(forceJumpAdress, MINUS_JUMP);
         }
-        Thread.Sleep(5);
     }
 
-    if (renderer.enableFlashBlock)
+    if (renderer.enableFlashBlock) // FLASH BLOCK METHOD
     {
         float flashDuration = swed.ReadFloat(localPlayerPawn, Offsets.m_flFlashBangTime);
 
@@ -93,14 +94,13 @@ while (true)
             swed.WriteFloat(localPlayerPawn, Offsets.m_flFlashBangTime, 0);
             Console.WriteLine("Flash removed");
         }
-    }
-    else
+    }else continue;
+    
+    for (int i = 0; i < 64; i++) // ENTITY LIST LOOP
     {
-        continue;
-    }
+        if (listEntry == IntPtr.Zero) // CHECKING ENTITY IS VALID OR NOT.
+            continue;
 
-    for (int i = 0; i < 64; i++)
-    {
         IntPtr currentController = swed.ReadPointer(listEntry, i * 0x78);
         if (currentController == IntPtr.Zero) continue;
 
@@ -113,16 +113,18 @@ while (true)
         IntPtr currentPawn = swed.ReadPointer(listEntry2, 0x78 * (pawnHandle & 0x1FF));
         if (currentPawn == localPlayer.pawnAdress) continue;
 
-        uint lifeState = swed.ReadUInt(currentPawn, Offsets.m_lifeState);
+        uint lifeState = swed.ReadUInt(currentPawn, Offsets.m_lifeState); // IS ENTITY ALIVE ?
         if (lifeState != 256) continue;
 
         IntPtr sceneNode = swed.ReadPointer(currentPawn, Offsets.m_pGameSceneNode);
-
         IntPtr boneMatrix = swed.ReadPointer(sceneNode, Offsets.m_modelState + 0x80);
 
         int health = swed.ReadInt(currentPawn, Offsets.m_iHealth);
         int team = swed.ReadInt(currentPawn, Offsets.m_iTeamNum);
-        if (team == localPlayer.team && !renderer.aimOnTeam)
+        // bool spotted = swed.ReadBool(currentPawn, Offsets.m_entitySpottedState + Offsets.m_bSpotted);         Working on it.
+        // if (spotted == false && renderer.aimOnlySpotted) continue;                                            Working on it.
+
+        if (team == localPlayer.team && !renderer.aimOnTeam) // IS ENTITY YOUR TEAMMATE ? IF IT IS SHOOT OR NOT.
             continue;
 
 
@@ -130,30 +132,30 @@ while (true)
 
         Entity entity = new Entity();
 
-        entity.pawnAdress = currentPawn;
-        entity.controllerAdress = currentController;
-        entity.health = health;
-        entity.lifeState = lifeState;
-        entity.origin = swed.ReadVec(currentPawn, Offsets.m_vOldOrigin);
-        entity.team = swed.ReadInt(currentPawn, Offsets.m_iTeamNum);
-        entity.pos = swed.ReadVec(currentPawn, Offsets.m_vOldOrigin);
-        entity.viewOffset = swed.ReadVec(currentPawn, Offsets.m_vecViewOffset);
-        entity.view = swed.ReadVec(currentPawn, Offsets.m_vecViewOffset);
-        entity.distance = Vector3.Distance(entity.origin, localPlayer.origin);
-        entity.pos2D = Calculate.WorldtoScreen(viewMatrix, entity.pos, screenSize);
-        entity.viewPos2D = Calculate.WorldtoScreen(viewMatrix, Vector3.Add(entity.pos, entity.viewOffset), screenSize);
-        entity.head = swed.ReadVec(boneMatrix, 6 * 32);
-        entity.head2d = Calculate.WorldtoScreen(viewMatrix, entity.head, screenSize);
-        entity.pixelDistance = Vector2.Distance(entity.head2d, new Vector2(screenSize.X / 2, screenSize.Y / 2));
+        entity.team = swed.ReadInt(currentPawn, Offsets.m_iTeamNum);                                                    // Wallhack values
+        entity.pos = swed.ReadVec(currentPawn, Offsets.m_vOldOrigin);                                                   // Wallhack values
+        entity.viewOffset = swed.ReadVec(currentPawn, Offsets.m_vecViewOffset);                                         // Wallhack values
+        entity.pos2D = Calculate.WorldtoScreen(viewMatrix, entity.pos, screenSize);                                     // Wallhack values
+        entity.viewPos2D = Calculate.WorldtoScreen(viewMatrix, Vector3.Add(entity.pos, entity.viewOffset), screenSize); // Wallhack values
+        entity.pawnAdress = currentPawn;                                                                                // AIMBOT VALUES
+        entity.controllerAdress = currentController;                                                                    // AIMBOT VALUES
+        entity.health = health;                                                                                         // AIMBOT VALUES
+        entity.lifeState = lifeState;                                                                                   // AIMBOT VALUES
+        entity.origin = swed.ReadVec(currentPawn, Offsets.m_vOldOrigin);                                                // AIMBOT VALUES
+        entity.view = swed.ReadVec(currentPawn, Offsets.m_vecViewOffset);                                               // AIMBOT VALUES
+        entity.distance = Vector3.Distance(entity.origin, localPlayer.origin);                                          // AIMBOT VALUES - PLAYER
+        entity.head = swed.ReadVec(boneMatrix, 6 * 32);                                                                 // AIMBOT VALUES
+        entity.head2d = Calculate.WorldtoScreen(viewMatrix, entity.head, screenSize);                                   // AIMBOT VALUES
+        entity.pixelDistance = Vector2.Distance(entity.head2d, new Vector2(screenSize.X / 2, screenSize.Y / 2));        // AIMBOT VALUES - CROSSHAIR
 
         entities.Add(entity);
     }
     renderer.UpdateLocalPlayer(localPlayer);
     renderer.UpdateEntities(entities);
 
-    entities = entities.OrderBy(o => o.pixelDistance).ToList();
+    entities = entities.OrderBy(o => o.pixelDistance).ToList(); // ORDERING ENTITIES BY DISTANCE FROM CROSSHAIR
 
-    if (renderer.enableAimbot && entities.Count > 0 && GetAsyncKeyState(AIMBOT_HOTKEY) < 0)
+    if (renderer.enableAimbot && entities.Count > 0 && GetAsyncKeyState(AIMBOT_HOTKEY) < 0) // AIMBOT METHOD
     {
         Vector3 playerView = Vector3.Add(localPlayer.origin, localPlayer.view);
         Vector3 entityView = Vector3.Add(entities[0].origin, entities[0].view);
@@ -168,5 +170,5 @@ while (true)
     }
 }
 
-[DllImport("user32.dll")]
+[DllImport("user32.dll")] //TRACKING KEYBOARD INPUTS
 static extern short GetAsyncKeyState(int vKey);

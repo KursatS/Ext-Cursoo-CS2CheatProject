@@ -23,6 +23,8 @@
         public static int m_pCameraServices = 0x1130;
         public static int m_iFOV = 0x210;
         public static int m_bIsScoped = 0x22A0;
+        public static int m_entitySpottedState = 0x2288;
+        public static int m_bSpotted = 0x8;
 
     }
 }
