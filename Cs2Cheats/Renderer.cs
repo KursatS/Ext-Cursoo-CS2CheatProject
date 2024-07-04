@@ -33,11 +33,15 @@ namespace cursooV1
         public bool aimOnTeam = false;
         public bool aimOnlySpotted = true;
         public bool enableESPLines = true;
+        public bool enableBonesEsp = true;
         public float circleFov = 50;
+        public float boneThickness = 1;
         public int playerFov = 90;
         public Vector4 circleColor = new Vector4(1,1,1,1);    // WHITE
-        private Vector4 enemyColor = new Vector4(1, 0, 0, 1); // RED
-        private Vector4 teamColor = new Vector4(0, 1, 0, 1);  // GREEN
+        public Vector4 enemyColor = new Vector4(1, 0, 0, 1); // RED
+        public Vector4 teamColor = new Vector4(0, 1, 0, 1);  // GREEN
+        public Vector4 boneColor = new Vector4(1,1,1,1);    // WHITE
+
 
         static void HelpMarker(string text)
         {
@@ -58,6 +62,7 @@ namespace cursooV1
             ImGui.Checkbox("Enable ESP", ref enableESP);
             ImGui.SameLine();
             ImGui.Checkbox("Enable ESP Lines", ref enableESPLines);
+            ImGui.Checkbox("Enable Bones ESP", ref enableBonesEsp);
             ImGui.Checkbox("Enable Trigger", ref enableTrigger);
             ImGui.SameLine(); HelpMarker("HOLD to CAPS LOCK");
             ImGui.Checkbox("Enable Aimbot", ref enableAimbot);
@@ -79,6 +84,9 @@ namespace cursooV1
 
                 if (ImGui.CollapsingHeader("Team color"))
                     ImGui.ColorPicker4("##teamcolor", ref teamColor);
+
+                if (ImGui.CollapsingHeader("Bone color"))
+                    ImGui.ColorPicker4("##bonecolor", ref boneColor);
                 ImGui.TreePop();
             }
             ImGui.Separator();
@@ -117,11 +125,16 @@ namespace cursooV1
                     }
                 }
             }
-        }
-
-        static void naber()
-        {
-            System.Diagnostics.Process.Start("http://www.webpage.com");
+            if (enableBonesEsp)
+            {
+                foreach (var entity in entities)
+                {
+                    if (EntityOnScreen(entity))
+                    {
+                        DrawBone(entity);
+                    }
+                }
+            }
         }
 
         bool EntityOnScreen(Entity entity)
@@ -131,6 +144,27 @@ namespace cursooV1
                 return true;
             }
             return false;
+        }
+
+        private void DrawBone(Entity entity)
+        {
+            uint uintColor = ImGui.ColorConvertFloat4ToU32(boneColor);
+
+            float currentBoneThickness = boneThickness / entity.distance;
+
+            drawList.AddLine(entity.bones2D[1], entity.bones2D[2], uintColor, currentBoneThickness);
+            drawList.AddLine(entity.bones2D[1], entity.bones2D[3], uintColor, currentBoneThickness);
+            drawList.AddLine(entity.bones2D[1], entity.bones2D[6], uintColor, currentBoneThickness);
+            drawList.AddLine(entity.bones2D[3], entity.bones2D[4], uintColor, currentBoneThickness);
+            drawList.AddLine(entity.bones2D[6], entity.bones2D[7], uintColor, currentBoneThickness);
+            drawList.AddLine(entity.bones2D[4], entity.bones2D[5], uintColor, currentBoneThickness);
+            drawList.AddLine(entity.bones2D[7], entity.bones2D[8], uintColor, currentBoneThickness);
+            drawList.AddLine(entity.bones2D[1], entity.bones2D[0], uintColor, currentBoneThickness);
+            drawList.AddLine(entity.bones2D[0], entity.bones2D[9], uintColor, currentBoneThickness);
+            drawList.AddLine(entity.bones2D[0], entity.bones2D[11], uintColor, currentBoneThickness);
+            drawList.AddLine(entity.bones2D[9], entity.bones2D[10], uintColor, currentBoneThickness);
+            drawList.AddLine(entity.bones2D[11], entity.bones2D[12], uintColor, currentBoneThickness);
+            drawList.AddCircle(entity.bones2D[2], 3 + currentBoneThickness, uintColor);
         }
 
         private void DrawHealthBar(Entity entity)

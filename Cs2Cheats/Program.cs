@@ -62,14 +62,6 @@ while (true)
         swed.WriteUInt(cameraServices + Offsets.m_iFOV, playerFov);
     }
 
-    if(entIndex != -1 && (GetAsyncKeyState(TRIGGER_HOTKEY)) < 0 && renderer.enableTrigger) //TRIGGER METHOD
-    {
-        Thread.Sleep(5);
-        swed.WriteInt(client,Offsets.dwForceAttack, 65537);
-        Thread.Sleep(5);
-        swed.WriteInt(client,Offsets.dwForceAttack, 256);
-        Thread.Sleep(270); // FOR SLOW ATTACK
-    }
 
     if (renderer.enableBHOP && GetAsyncKeyState(SPACE_BAR) < 0)// BHOP METHOD
     {
@@ -116,19 +108,18 @@ while (true)
         uint lifeState = swed.ReadUInt(currentPawn, Offsets.m_lifeState); // IS ENTITY ALIVE ?
         if (lifeState != 256) continue;
 
-        IntPtr sceneNode = swed.ReadPointer(currentPawn, Offsets.m_pGameSceneNode);
-        IntPtr boneMatrix = swed.ReadPointer(sceneNode, Offsets.m_modelState + 0x80);
-
         int health = swed.ReadInt(currentPawn, Offsets.m_iHealth);
         int team = swed.ReadInt(currentPawn, Offsets.m_iTeamNum);
         // bool spotted = swed.ReadBool(currentPawn, Offsets.m_entitySpottedState + Offsets.m_bSpotted);         Working on it.
         // if (spotted == false && renderer.aimOnlySpotted) continue;                                            Working on it.
 
-        if (team == localPlayer.team && !renderer.aimOnTeam) // IS ENTITY YOUR TEAMMATE ? IF IT IS SHOOT OR NOT.
+        if (team == localPlayer.team && !renderer.aimOnTeam)
             continue;
 
-
         float[] viewMatrix = swed.ReadMatrix(client + Offsets.dwViewMatrix);
+
+        IntPtr sceneNode = swed.ReadPointer(currentPawn, Offsets.m_pGameSceneNode);
+        IntPtr boneMatrix = swed.ReadPointer(sceneNode, Offsets.m_modelState + 0x80);
 
         Entity entity = new Entity();
 
@@ -137,6 +128,8 @@ while (true)
         entity.viewOffset = swed.ReadVec(currentPawn, Offsets.m_vecViewOffset);                                         // Wallhack values
         entity.pos2D = Calculate.WorldtoScreen(viewMatrix, entity.pos, screenSize);                                     // Wallhack values
         entity.viewPos2D = Calculate.WorldtoScreen(viewMatrix, Vector3.Add(entity.pos, entity.viewOffset), screenSize); // Wallhack values
+        entity.bones = Calculate.ReadBones(boneMatrix,swed);
+        entity.bones2D = Calculate.ReadBones2d(entity.bones, viewMatrix, screenSize);
         entity.pawnAdress = currentPawn;                                                                                // AIMBOT VALUES
         entity.controllerAdress = currentController;                                                                    // AIMBOT VALUES
         entity.health = health;                                                                                         // AIMBOT VALUES
@@ -167,6 +160,14 @@ while (true)
 
             swed.WriteVec(client, Offsets.dwViewAngles, newAnglesVec3);
         }
+    }
+
+    if(entIndex != -1 && GetAsyncKeyState(TRIGGER_HOTKEY) < 0 && renderer.enableTrigger) //TRIGGER METHOD
+    {
+        swed.WriteInt(client,Offsets.dwForceAttack, 65537);
+        Thread.Sleep(2);
+        swed.WriteInt(client,Offsets.dwForceAttack, 256);
+        Thread.Sleep(270); // FOR SLOW ATTACK
     }
 }
 

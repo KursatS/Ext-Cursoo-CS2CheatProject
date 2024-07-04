@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using System.Management;
+using System.Numerics;
+using Swed64;
 
 namespace cursooV1
 {
@@ -34,6 +36,32 @@ namespace cursooV1
             pitch = -(float)(Math.Atan2(deltaZ, distance) * 180 / Math.PI);
 
             return new Vector2(yaw, pitch);
+        }
+
+        public static List<Vector3> ReadBones(IntPtr boneAdress, Swed swed)
+        {
+            byte[] boneBytes = swed.ReadBytes(boneAdress, 27 * 32 + 16);
+            List<Vector3> bones = new List<Vector3>();
+            foreach(var boneId in Enum.GetValues(typeof(BoneIds)))
+            {
+                float x = BitConverter.ToSingle(boneBytes, (int)boneId * 32 + 0);
+                float y = BitConverter.ToSingle(boneBytes, (int)boneId * 32 + 4);
+                float z = BitConverter.ToSingle(boneBytes, (int)boneId * 32 + 8);
+                Vector3 currentBone = new Vector3(x, y, z);
+                bones.Add(currentBone);
+            }
+            return bones;
+        }
+
+        public static List<Vector2> ReadBones2d(List<Vector3> bones, float[] viewMatrix, Vector2 screenSize)
+        {
+            List<Vector2> bones2D = new List<Vector2>();
+            foreach (Vector3 bone in bones)
+            {
+                Vector2 bone2D = Calculate.WorldtoScreen(viewMatrix, bone, screenSize);
+                bones2D.Add(bone2D);
+            }
+            return bones2D;
         }
     }
 }

@@ -26,5 +26,6 @@
         public static int m_entitySpottedState = 0x2288;
         public static int m_bSpotted = 0x8;
 
+
     }
 }
