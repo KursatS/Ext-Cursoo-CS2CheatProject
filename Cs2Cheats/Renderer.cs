@@ -35,12 +35,11 @@ namespace cursooV1
         public bool enableESPLines = true;
         public bool enableBonesEsp = true;
         public float circleFov = 50;
-        public float boneThickness = 1;
+        public float boneThickness = 400;
         public int playerFov = 90;
         public Vector4 circleColor = new Vector4(1,1,1,1);    // WHITE
         public Vector4 enemyColor = new Vector4(1, 0, 0, 1); // RED
         public Vector4 teamColor = new Vector4(0, 1, 0, 1);  // GREEN
-        public Vector4 boneColor = new Vector4(1,1,1,1);    // WHITE
 
 
         static void HelpMarker(string text)
@@ -84,9 +83,6 @@ namespace cursooV1
 
                 if (ImGui.CollapsingHeader("Team color"))
                     ImGui.ColorPicker4("##teamcolor", ref teamColor);
-
-                if (ImGui.CollapsingHeader("Bone color"))
-                    ImGui.ColorPicker4("##bonecolor", ref boneColor);
                 ImGui.TreePop();
             }
             ImGui.Separator();
@@ -131,7 +127,21 @@ namespace cursooV1
                 {
                     if (EntityOnScreen(entity))
                     {
-                        DrawBone(entity);
+                        if (entity.health >= 70)
+                        {
+                            Vector4 boneColor = new Vector4(0, 1, 0, 1);
+                            DrawBone(entity, boneColor);
+                        }else if (entity.health >= 30)
+                        {
+                            Vector4 boneColor = new Vector4(1, 1, 0, 1);
+                            DrawBone(entity, boneColor);
+                        }
+                        else
+                        {
+                            Vector4 boneColor = new Vector4(1, 0, 0, 1);
+                            DrawBone(entity, boneColor);
+                        }
+                            
                     }
                 }
             }
@@ -146,7 +156,7 @@ namespace cursooV1
             return false;
         }
 
-        private void DrawBone(Entity entity)
+        private void DrawBone(Entity entity,Vector4 boneColor)
         {
             uint uintColor = ImGui.ColorConvertFloat4ToU32(boneColor);
 

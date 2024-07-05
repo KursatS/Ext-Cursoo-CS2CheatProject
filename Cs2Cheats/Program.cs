@@ -67,12 +67,12 @@ while (true)
     {
         if (fFlag == STANDING || fFlag == CROUCHING)
         {
-            Thread.Sleep(5);
+            Thread.Sleep(1);
             swed.WriteUInt(forceJumpAdress, PLUS_JUMP);
         }
         else
         {
-            Thread.Sleep(1);
+            Thread.Sleep(5);
             swed.WriteUInt(forceJumpAdress, MINUS_JUMP);
         }
     }
@@ -167,7 +167,7 @@ while (true)
         swed.WriteInt(client,Offsets.dwForceAttack, 65537);
         Thread.Sleep(2);
         swed.WriteInt(client,Offsets.dwForceAttack, 256);
-        Thread.Sleep(270); // FOR SLOW ATTACK
+        Thread.Sleep(2); // FOR SLOW ATTACK YOU CAN CHANGE THIS VALUE(IT WILL LAGGY WALLHACK)
     }
 }
 
