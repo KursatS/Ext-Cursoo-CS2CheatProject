@@ -105,9 +105,22 @@ namespace cursooV1
                 {
                     if (EntityOnScreen(entity))
                     {
-                        DrawHealthBar(entity);
                         DrawBox(entity);
-                        DrawHealthBar(entity);
+                        if (entity.health >= 70)
+                        {
+                            Vector4 healthBarColor = new Vector4(0, 1, 0, 1);
+                            DrawHealthBar(entity, healthBarColor);
+                        }
+                        else if (entity.health >= 30)
+                        {
+                            Vector4 healthBarColor = new Vector4(1, 1, 0, 1);
+                            DrawHealthBar(entity, healthBarColor);
+                        }
+                        else
+                        {
+                            Vector4 healthBarColor = new Vector4(1, 0, 0, 1);
+                            DrawHealthBar(entity, healthBarColor);
+                        }
                     }
                 }
             }
@@ -177,7 +190,7 @@ namespace cursooV1
             drawList.AddCircle(entity.bones2D[2], 3 + currentBoneThickness, uintColor);
         }
 
-        private void DrawHealthBar(Entity entity)
+        private void DrawHealthBar(Entity entity, Vector4 healthBarColor)
         {
             float entityHeight = entity.pos2D.Y - entity.viewPos2D.Y;
             float boxLeft = entity.viewPos2D.X - entityHeight / 3;
@@ -190,7 +203,7 @@ namespace cursooV1
             Vector2 barBottom = new Vector2(boxLeft, entity.pos2D.Y);
             Vector4 barColor = new Vector4(0, 1, 0, 1);
 
-            drawList.AddRectFilled(barTop, barBottom, ImGui.ColorConvertFloat4ToU32(barColor));
+            drawList.AddRectFilled(barTop, barBottom, ImGui.ColorConvertFloat4ToU32(healthBarColor));
         }
         private void DrawBox(Entity entity)
         {
