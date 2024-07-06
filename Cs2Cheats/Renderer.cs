@@ -28,12 +28,13 @@ namespace cursooV1
         public bool enableESP = true;
         public bool enableFlashBlock = true;
         public bool enableAimbot = true;
-        public bool enableBHOP = true;
+        public bool enableBHOP = false;
         public bool enableTrigger = true;
         public bool aimOnTeam = false;
         public bool aimOnlySpotted = true;
         public bool enableESPLines = true;
         public bool enableBonesEsp = true;
+        public bool enableNoRecoil = false;
         public float circleFov = 50;
         public float boneThickness = 400;
         public int playerFov = 90;
@@ -66,6 +67,7 @@ namespace cursooV1
             ImGui.SameLine(); HelpMarker("HOLD to CAPS LOCK");
             ImGui.Checkbox("Enable Aimbot", ref enableAimbot);
             ImGui.SameLine(); HelpMarker("HOLD to SHIFT");
+            ImGui.Checkbox("Enable No Recoil (BETA)", ref enableNoRecoil);
             //ImGui.Checkbox("Enable Aim Only Spotted", ref aimOnlySpotted); Working on it.
             ImGui.Checkbox("Enable Aim on Team", ref aimOnTeam);
             ImGui.SliderFloat("Aimbot FOV", ref circleFov, 10, 300);

@@ -25,7 +25,7 @@
         public static int m_bIsScoped = 0x22A0;
         public static int m_entitySpottedState = 0x2288;
         public static int m_bSpotted = 0x8;
-
-
+        public static int m_aimPunchAngle = 0x14CC;
+        public static int m_iShotsFired = 0x22B4;
     }
 }

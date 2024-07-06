@@ -7,8 +7,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using Vortice.Direct3D11;
 
-Console.WriteLine("Programmed by Kürşat Sinan");
-
 Swed swed = new Swed("cs2");
 IntPtr client = swed.GetModuleBase("client.dll");
 
@@ -30,6 +28,7 @@ const uint CROUCHING = 65667;
 const uint PLUS_JUMP = 65537;
 const uint MINUS_JUMP = 256;
 IntPtr forceJumpAdress = client + 0x181C670;
+Vector3 oldPunch = new Vector3();
 
 
 while (true)
@@ -42,6 +41,7 @@ while (true)
     localPlayer.pawnAdress = swed.ReadPointer(client, Offsets.dwLocalPlayerPawn);
     localPlayer.origin = swed.ReadVec(localPlayer.pawnAdress, Offsets.m_vOldOrigin);
     localPlayer.view = swed.ReadVec(localPlayer.pawnAdress, Offsets.m_vecViewOffset);
+    localPlayer.crosshairCoordinates = swed.ReadVec(client + Offsets.dwViewAngles);
     uint fFlag = swed.ReadUInt(localPlayerPawn, 0x3CC);
     int entIndex = swed.ReadInt(localPlayerPawn, Offsets.m_iIDEntIndex);
 
@@ -49,6 +49,33 @@ while (true)
     uint playerFov = (uint)renderer.playerFov;
     uint currentFov = swed.ReadUInt(cameraServices + Offsets.m_iFOV);
     bool isScoped = swed.ReadBool(localPlayerPawn, Offsets.m_bIsScoped);
+    bool shotsFired = swed.ReadBool(localPlayerPawn, Offsets.m_iShotsFired);
+    Vector3 aimPunch = swed.ReadVec(localPlayerPawn, Offsets.m_aimPunchAngle);
+
+    if (shotsFired && renderer.enableNoRecoil)
+    {
+        Vector3 newAngles = new Vector3(
+            localPlayer.crosshairCoordinates.X + oldPunch.X - aimPunch.X * 2,
+            localPlayer.crosshairCoordinates.Y + oldPunch.Y - aimPunch.Y * 2,
+            0);
+
+        if (newAngles.X > 89)
+            newAngles.X = 89;
+        if (newAngles.X < -89)
+            newAngles.X = -89;
+        while (newAngles.Y > 180)
+            newAngles.Y -= 360;
+        while (newAngles.Y < -180)
+            newAngles.Y += 360;
+        swed.WriteVec(client + Offsets.dwViewAngles, newAngles);
+
+        oldPunch.X = aimPunch.X * 2;
+        oldPunch.Y = aimPunch.Y * 2;
+    }
+    else
+    {
+        oldPunch.X = oldPunch.Y = 0;
+    }
 
     if (GetAsyncKeyState(INSERT) < 0) //Close App
     {
@@ -167,8 +194,8 @@ while (true)
         swed.WriteInt(client,Offsets.dwForceAttack, 65537);
         Thread.Sleep(2);
         swed.WriteInt(client,Offsets.dwForceAttack, 256);
-        Thread.Sleep(2); // FOR SLOW ATTACK YOU CAN CHANGE THIS VALUE(IT WILL LAGGY WALLHACK)
     }
+    Thread.Sleep(1);
 }
 
 [DllImport("user32.dll")] //TRACKING KEYBOARD INPUTS

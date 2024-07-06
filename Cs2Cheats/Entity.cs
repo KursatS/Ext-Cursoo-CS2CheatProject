@@ -13,6 +13,7 @@ namespace cursooV1
         public Vector3 origin { get; set; }
         public Vector3 view { get; set; }
         public Vector3 head { get; set; }
+        public Vector3 crosshairCoordinates { get; set; }
         public Vector2 pos2D { get; set; }
         public Vector2 viewPos2D { get; set; }
         public Vector2 head2d { get; set; }
