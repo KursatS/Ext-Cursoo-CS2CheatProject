@@ -99,7 +99,7 @@ while (true)
         }
         else
         {
-            Thread.Sleep(5);
+            Thread.Sleep(1);
             swed.WriteUInt(forceJumpAdress, MINUS_JUMP);
         }
     }
@@ -111,7 +111,6 @@ while (true)
         if (flashDuration > 0)
         {
             swed.WriteFloat(localPlayerPawn, Offsets.m_flFlashBangTime, 0);
-            Console.WriteLine("Flash removed");
         }
     }else continue;
     
@@ -195,7 +194,6 @@ while (true)
         Thread.Sleep(2);
         swed.WriteInt(client,Offsets.dwForceAttack, 256);
     }
-    Thread.Sleep(1);
 }
 
 [DllImport("user32.dll")] //TRACKING KEYBOARD INPUTS
