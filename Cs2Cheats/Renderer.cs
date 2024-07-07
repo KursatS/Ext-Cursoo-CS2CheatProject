@@ -12,18 +12,17 @@ namespace cursooV1
     public class Renderer : Overlay
     {
         [DllImport("user32.dll")]
-        static extern short GetAsyncKeyState(int vkey);
+        private static extern short GetAsyncKeyState(int vkey);
 
-        static int screenW = Screen.PrimaryScreen.Bounds.Width;
-        static int screenH = Screen.PrimaryScreen.Bounds.Height;
-
-        public Vector2 screenSize = new Vector2(screenW, screenH);
+        public static readonly int screenW = Screen.PrimaryScreen.Bounds.Width;
+        public static readonly int screenH = Screen.PrimaryScreen.Bounds.Height;
+        public readonly Vector2 screenSize = new Vector2(screenW, screenH);
 
         private ConcurrentQueue<Entity> entities = new ConcurrentQueue<Entity>();
         private Entity localPlayer = new Entity();
         private readonly object entityLock = new object();
 
-        ImDrawListPtr drawList;
+        private ImDrawListPtr drawList;
 
         public bool enableESP = true;
         public bool enableFlashBlock = true;
@@ -38,12 +37,11 @@ namespace cursooV1
         public float circleFov = 50;
         public float boneThickness = 400;
         public int playerFov = 90;
-        public Vector4 circleColor = new Vector4(1,1,1,1);    // WHITE
+        public Vector4 circleColor = new Vector4(1, 1, 1, 1);    // WHITE
         public Vector4 enemyColor = new Vector4(1, 0, 0, 1); // RED
         public Vector4 teamColor = new Vector4(0, 1, 0, 1);  // GREEN
 
-
-        static void HelpMarker(string text)
+        private static void HelpMarker(string text)
         {
             ImGui.TextDisabled("?");
             if (ImGui.BeginItemTooltip())
@@ -58,6 +56,13 @@ namespace cursooV1
         protected override void Render()
         {
             ImGui.Begin("by Cursoo^^");
+            DrawUI();
+            DrawOverlayElements();
+            ImGui.End();
+        }
+
+        private void DrawUI()
+        {
             ImGui.Text("INSERT for exit");
             ImGui.Checkbox("Enable ESP", ref enableESP);
             ImGui.SameLine();
@@ -68,7 +73,6 @@ namespace cursooV1
             ImGui.Checkbox("Enable Aimbot", ref enableAimbot);
             ImGui.SameLine(); HelpMarker("HOLD to SHIFT");
             ImGui.Checkbox("Enable No Recoil (BETA)", ref enableNoRecoil);
-            //ImGui.Checkbox("Enable Aim Only Spotted", ref aimOnlySpotted); Working on it.
             ImGui.Checkbox("Enable Aim on Team", ref aimOnTeam);
             ImGui.SliderFloat("Aimbot FOV", ref circleFov, 10, 300);
             ImGui.SliderInt("Player FOV", ref playerFov, 85, 160);
@@ -96,117 +100,110 @@ namespace cursooV1
                     UseShellExecute = true
                 });
             }
+        }
 
+        private void DrawOverlayElements()
+        {
             DrawOverlay(screenSize);
             drawList = ImGui.GetWindowDrawList();
             drawList.AddCircle(new Vector2(screenSize.X / 2, screenSize.Y / 2), circleFov, ImGui.ColorConvertFloat4ToU32(circleColor));
 
             if (enableESP)
             {
-                foreach (var entity in entities)
-                {
-                    if (EntityOnScreen(entity))
-                    {
-                        DrawBox(entity);
-                        if (entity.health >= 70)
-                        {
-                            Vector4 healthBarColor = new Vector4(0, 1, 0, 1);
-                            DrawHealthBar(entity, healthBarColor);
-                        }
-                        else if (entity.health >= 30)
-                        {
-                            Vector4 healthBarColor = new Vector4(1, 1, 0, 1);
-                            DrawHealthBar(entity, healthBarColor);
-                        }
-                        else
-                        {
-                            Vector4 healthBarColor = new Vector4(1, 0, 0, 1);
-                            DrawHealthBar(entity, healthBarColor);
-                        }
-                    }
-                }
+                DrawEntities();
             }
+
             if (enableESPLines)
             {
-                foreach (var entity in entities)
-                {
-                    if (EntityOnScreen(entity))
-                    {
-                        DrawLine(entity);
-                    }
-                }
+                DrawLines();
             }
+
             if (enableBonesEsp)
             {
-                foreach (var entity in entities)
+                DrawBones();
+            }
+        }
+
+        private void DrawEntities()
+        {
+            foreach (var entity in entities)
+            {
+                if (EntityOnScreen(entity))
                 {
-                    if (EntityOnScreen(entity))
-                    {
-                        if (entity.health >= 70)
-                        {
-                            Vector4 boneColor = new Vector4(0, 1, 0, 1);
-                            DrawBone(entity, boneColor);
-                        }else if (entity.health >= 30)
-                        {
-                            Vector4 boneColor = new Vector4(1, 1, 0, 1);
-                            DrawBone(entity, boneColor);
-                        }
-                        else
-                        {
-                            Vector4 boneColor = new Vector4(1, 0, 0, 1);
-                            DrawBone(entity, boneColor);
-                        }
-                            
-                    }
+                    DrawBox(entity);
+                    DrawHealthBar(entity);
                 }
             }
         }
 
-        bool EntityOnScreen(Entity entity)
+        private void DrawLines()
         {
-            if (entity.pos2D.X > 0 && entity.pos2D.X < screenSize.X && entity.pos2D.Y > 0 && entity.pos2D.Y < screenSize.Y)
+            foreach (var entity in entities)
             {
-                return true;
+                if (EntityOnScreen(entity))
+                {
+                    DrawLine(entity);
+                }
             }
-            return false;
         }
 
-        private void DrawBone(Entity entity,Vector4 boneColor)
+        private void DrawBones()
         {
-            uint uintColor = ImGui.ColorConvertFloat4ToU32(boneColor);
+            foreach (var entity in entities)
+            {
+                if (EntityOnScreen(entity))
+                {
+                    DrawBone(entity);
+                }
+            }
+        }
 
+        private bool EntityOnScreen(Entity entity)
+        {
+            return entity.pos2D.X > 0 && entity.pos2D.X < screenSize.X && entity.pos2D.Y > 0 && entity.pos2D.Y < screenSize.Y;
+        }
+
+        private void DrawBone(Entity entity)
+        {
+            uint uintColor = ImGui.ColorConvertFloat4ToU32(GetBoneColor(entity.health));
             float currentBoneThickness = boneThickness / entity.distance;
 
-            drawList.AddLine(entity.bones2D[1], entity.bones2D[2], uintColor, currentBoneThickness);
-            drawList.AddLine(entity.bones2D[1], entity.bones2D[3], uintColor, currentBoneThickness);
-            drawList.AddLine(entity.bones2D[1], entity.bones2D[6], uintColor, currentBoneThickness);
-            drawList.AddLine(entity.bones2D[3], entity.bones2D[4], uintColor, currentBoneThickness);
-            drawList.AddLine(entity.bones2D[6], entity.bones2D[7], uintColor, currentBoneThickness);
-            drawList.AddLine(entity.bones2D[4], entity.bones2D[5], uintColor, currentBoneThickness);
-            drawList.AddLine(entity.bones2D[7], entity.bones2D[8], uintColor, currentBoneThickness);
-            drawList.AddLine(entity.bones2D[1], entity.bones2D[0], uintColor, currentBoneThickness);
-            drawList.AddLine(entity.bones2D[0], entity.bones2D[9], uintColor, currentBoneThickness);
-            drawList.AddLine(entity.bones2D[0], entity.bones2D[11], uintColor, currentBoneThickness);
-            drawList.AddLine(entity.bones2D[9], entity.bones2D[10], uintColor, currentBoneThickness);
-            drawList.AddLine(entity.bones2D[11], entity.bones2D[12], uintColor, currentBoneThickness);
-            drawList.AddCircle(entity.bones2D[2], 3 + currentBoneThickness, uintColor);
+            var bones = entity.bones2D;
+            drawList.AddLine(bones[1], bones[2], uintColor, currentBoneThickness);
+            drawList.AddLine(bones[1], bones[3], uintColor, currentBoneThickness);
+            drawList.AddLine(bones[1], bones[6], uintColor, currentBoneThickness);
+            drawList.AddLine(bones[3], bones[4], uintColor, currentBoneThickness);
+            drawList.AddLine(bones[6], bones[7], uintColor, currentBoneThickness);
+            drawList.AddLine(bones[4], bones[5], uintColor, currentBoneThickness);
+            drawList.AddLine(bones[7], bones[8], uintColor, currentBoneThickness);
+            drawList.AddLine(bones[1], bones[0], uintColor, currentBoneThickness);
+            drawList.AddLine(bones[0], bones[9], uintColor, currentBoneThickness);
+            drawList.AddLine(bones[0], bones[11], uintColor, currentBoneThickness);
+            drawList.AddLine(bones[9], bones[10], uintColor, currentBoneThickness);
+            drawList.AddLine(bones[11], bones[12], uintColor, currentBoneThickness);
+            drawList.AddCircle(bones[2], 3 + currentBoneThickness, uintColor);
         }
 
-        private void DrawHealthBar(Entity entity, Vector4 healthBarColor)
+        private Vector4 GetBoneColor(int health)
+        {
+            if (health >= 70) return new Vector4(0, 1, 0, 1);
+            if (health >= 30) return new Vector4(1, 1, 0, 1);
+            return new Vector4(1, 0, 0, 1);
+        }
+
+        private void DrawHealthBar(Entity entity)
         {
             float entityHeight = entity.pos2D.Y - entity.viewPos2D.Y;
             float boxLeft = entity.viewPos2D.X - entityHeight / 3;
-            float boxRight = entity.pos2D.X + entityHeight / 3;
-            float barWidth = 0.05f;
             float barHeight = entityHeight * (entity.health / 100f);
-            float barPixelWidth = barWidth * (boxRight - boxLeft);
 
-            Vector2 barTop = new Vector2(boxLeft - barPixelWidth, entity.pos2D.Y - barHeight);
+            Vector2 barTop = new Vector2(boxLeft - 5, entity.pos2D.Y - barHeight);
             Vector2 barBottom = new Vector2(boxLeft, entity.pos2D.Y);
-            Vector4 barColor = new Vector4(0, 1, 0, 1);
+            Vector4 healthBarColor = GetBoneColor(entity.health);
 
             drawList.AddRectFilled(barTop, barBottom, ImGui.ColorConvertFloat4ToU32(healthBarColor));
         }
+
         private void DrawBox(Entity entity)
         {
             float entityHeight = entity.pos2D.Y - entity.viewPos2D.Y;
@@ -216,15 +213,18 @@ namespace cursooV1
 
             drawList.AddRect(rectTop, rectBottom, ImGui.ColorConvertFloat4ToU32(boxColor));
         }
+
         private void DrawLine(Entity entity)
         {
             Vector4 lineColor = localPlayer.team == entity.team ? teamColor : enemyColor;
             drawList.AddLine(new Vector2(screenSize.X / 2, screenSize.Y), entity.pos2D, ImGui.ColorConvertFloat4ToU32(lineColor));
         }
+
         public void UpdateEntities(IEnumerable<Entity> newEntities)
         {
             entities = new ConcurrentQueue<Entity>(newEntities);
         }
+
         public void UpdateLocalPlayer(Entity newEntity)
         {
             lock (entityLock)
@@ -232,9 +232,9 @@ namespace cursooV1
                 localPlayer = newEntity;
             }
         }
-        void DrawOverlay(Vector2 screenSize) //Cheat Menu Overlay
+
+        private void DrawOverlay(Vector2 screenSize) // Cheat Menu Overlay
         {
-            SetupImGuiStyle();
             ImGui.SetNextWindowSize(screenSize);
             ImGui.SetNextWindowPos(new Vector2(0, 0));
             ImGui.Begin("overlay", ImGuiWindowFlags.NoDecoration
@@ -245,11 +245,6 @@ namespace cursooV1
                 | ImGuiWindowFlags.NoCollapse
                 | ImGuiWindowFlags.NoScrollbar
                 | ImGuiWindowFlags.NoScrollWithMouse);
-        }
-
-        public static void SetupImGuiStyle()
-        {
-            // Purple Comfy styleRegularLunar from ImThemes
             var style = ImGuiNET.ImGui.GetStyle();
 
             style.Alpha = 1.0f;
@@ -337,6 +332,5 @@ namespace cursooV1
             style.Colors[(int)ImGuiCol.NavWindowingDimBg] = new Vector4(0.800000011920929f, 0.800000011920929f, 0.800000011920929f, 0.2000000029802322f);
             style.Colors[(int)ImGuiCol.ModalWindowDimBg] = new Vector4(0.800000011920929f, 0.800000011920929f, 0.800000011920929f, 0.3499999940395355f);
         }
-
     }
 }
