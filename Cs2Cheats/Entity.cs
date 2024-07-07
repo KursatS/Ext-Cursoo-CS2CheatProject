@@ -17,6 +17,8 @@ namespace cursooV1
         public Vector2 pos2D { get; set; }
         public Vector2 viewPos2D { get; set; }
         public Vector2 head2d { get; set; }
+        public string name { get; set; }
+        public bool spotted { get; set; }
         public uint lifeState { get; set; }
         public int entIndex { get; set; }
         public int health { get; set; }

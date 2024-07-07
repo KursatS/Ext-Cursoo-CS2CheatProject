@@ -27,5 +27,6 @@
         public static int m_bSpotted = 0x8;
         public static int m_aimPunchAngle = 0x14CC;
         public static int m_iShotsFired = 0x22B4;
+        public static int m_iszPlayerName = 0x630;
     }
 }

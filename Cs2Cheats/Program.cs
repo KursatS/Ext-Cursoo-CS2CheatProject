@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Vortice.Direct3D11;
@@ -82,11 +83,12 @@ namespace cursooV1
                 uint lifeState = swed.ReadUInt(currentPawn, Offsets.m_lifeState);
                 if (lifeState != 256) continue;
 
-
                 Entity entity = new Entity
                 {
                     team = swed.ReadInt(currentPawn, Offsets.m_iTeamNum),
                     pos = swed.ReadVec(currentPawn, Offsets.m_vOldOrigin),
+                    name = swed.ReadString(currentController, Offsets.m_iszPlayerName, 16),
+                    spotted = swed.ReadBool(currentPawn, Offsets.m_entitySpottedState + Offsets.m_bSpotted),
                     viewOffset = swed.ReadVec(currentPawn, Offsets.m_vecViewOffset),
                     pos2D = Calculate.WorldtoScreen(swed.ReadMatrix(client + Offsets.dwViewMatrix), swed.ReadVec(currentPawn, Offsets.m_vOldOrigin), screenSize),
                     viewPos2D = Calculate.WorldtoScreen(swed.ReadMatrix(client + Offsets.dwViewMatrix), Vector3.Add(swed.ReadVec(currentPawn, Offsets.m_vOldOrigin), swed.ReadVec(currentPawn, Offsets.m_vecViewOffset)), screenSize),
@@ -108,6 +110,11 @@ namespace cursooV1
                     continue;
 
                 entities.Add(entity);
+
+                if(renderer.enableRadarHack)
+                    swed.WriteBool(currentPawn, Offsets.m_entitySpottedState + Offsets.m_bSpotted, true);
+                else
+                    swed.WriteBool(currentPawn, Offsets.m_entitySpottedState + Offsets.m_bSpotted, false);
             }
 
             renderer.UpdateLocalPlayer(localPlayer);

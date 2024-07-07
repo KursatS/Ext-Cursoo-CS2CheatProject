@@ -31,6 +31,7 @@ namespace cursooV1
         public bool enableTrigger = true;
         public bool aimOnTeam = false;
         public bool aimOnlySpotted = true;
+        public bool enableRadarHack = true;
         public bool enableESPLines = true;
         public bool enableBonesEsp = true;
         public bool enableNoRecoil = false;
@@ -68,6 +69,7 @@ namespace cursooV1
             ImGui.SameLine();
             ImGui.Checkbox("Enable ESP Lines", ref enableESPLines);
             ImGui.Checkbox("Enable Bones ESP", ref enableBonesEsp);
+            ImGui.Checkbox("Enable Radar Hack", ref enableRadarHack);
             ImGui.Checkbox("Enable Trigger", ref enableTrigger);
             ImGui.SameLine(); HelpMarker("HOLD to CAPS LOCK");
             ImGui.Checkbox("Enable Aimbot", ref enableAimbot);
